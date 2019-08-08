@@ -1,0 +1,4 @@
+# SPDX-License-Identifier GPL-2.0+
+---
+run_vagrant: False
+force_project_dir: ""

@@ -1,0 +1,70 @@
+---
+- name: Verify vagrant installation
+  command: "which vagrant"
+  register: vagrant_present
+  changed_when: "vagrant_present.rc == 0"
+  failed_when: vagrant_present.rc != 0
+  run_once: true
+  tags: [ 'vagrant', 'verify' ]
+
+- name: Stat directory {{ vagrant_dir }}
+  stat:
+    path: "{{ vagrant_dir }}"
+    follow: yes
+  register: stat_dir_result
+  failed_when:
+  tags: [ 'vagrant', 'stat' ]
+
+- name: Verify vagrant directory exists {{ vagrant_dir }}
+  assert:
+    that:
+      - stat_dir_result is success
+      - stat_dir_result.stat is defined
+      - stat_dir_result.stat.exists
+      - stat_dir_result.stat.isdir
+  tags: [ 'vagrant', 'assert' ]
+
+- name: Stat file {{ vagrant_node_file }}
+  stat:
+    path: "{{ vagrant_node_file }}"
+    follow: yes
+  register: stat_file_result
+  tags: [ 'vagrant', 'stat' ]
+
+- name: Verify vagrant node configuration file exists {{ vagrant_node_file }}
+  assert:
+    that:
+      - stat_file_result is success
+      - stat_file_result.stat is defined
+      - stat_file_result.stat.exists
+      - stat_file_result.stat.isreg
+  tags: [ 'vagrant', 'assert' ]
+
+- name: Stat Vagrant file {{ vagrant_dir }}/Vagrantfile
+  stat:
+    path: "{{ vagrant_dir }}/Vagrantfile"
+    follow: yes
+  register: stat_vagrant_result
+  tags: [ 'vagrant', 'stat' ]
+
+- name: Copy Vagrantfile if it did not exist
+  template:
+    src: Vagrantfile
+    dest: "{{ vagrant_dir }}/Vagrantfile"
+  run_once: true
+  when:
+    - stat_vagrant_result is success
+    - stat_vagrant_result.stat is success
+    - not stat_vagrant_result.stat.exists
+  tags: [ 'vagrant', 'copy' ]
+
+- name: Run vagrant
+  command: "vagrant up"
+  args:
+    chdir: "{{ vagrant_dir }}"
+  register: vagrant_run
+  failed_when: vagrant_run.rc != 0
+  run_once: true
+  when:
+    - run_vagrant
+  tags: [ 'vagrant', 'run' ]
