@@ -76,6 +76,7 @@ pn_u = project_namespace.upcase
 
 # Bash variables cannot use "-", they must use _
 pn_u = pn_u.tr("-", "_")
+pn_l = pn_l.tr("-", "_")
 
 node_config = ENV[pn_u + '_VAGRANT_NODE_CONFIG'] ? ENV[pn_u + '_VAGRANT_NODE_CONFIG'] : pn_l + "_nodes.yaml"
 
