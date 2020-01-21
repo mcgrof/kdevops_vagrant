@@ -96,6 +96,8 @@ groups:
   * libvirt
   * qemu on Fedora / libvirt-qemu on Debian
 
+Debian has its own set of instructions on
+[https://wiki.debian.org/KVM#Connecting_locally_to_libvirt_as_regular_user](connecting locally to libvirt as a regular user).
 Debian uses libvirt-qemu as the userid which runs qemu, Fedora uses qemu.
 The qcow2 files created are ensured to allow the default user qemu executes
 under by letting the qemu user group to write to them as well. We have the
