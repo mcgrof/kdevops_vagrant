@@ -66,5 +66,5 @@
   failed_when: vagrant_run.rc != 0
   run_once: true
   when:
-    - run_vagrant
+    - run_vagrant|bool
   tags: [ 'vagrant', 'run' ]
