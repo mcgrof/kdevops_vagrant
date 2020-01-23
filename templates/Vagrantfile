@@ -114,6 +114,18 @@ limit_num_boxes = limit_boxes == "yes" && global_data['limit_num_boxes']  ? [lim
 limit_num_boxes = limit_boxes == "yes" && ENV[pn_u + '_VAGRANT_LIMIT_NUM_BOXES'] ? [limit_max_num_boxes, ENV[pn_u + '_VAGRANT_LIMIT_NUM_BOXES'].to_i].min : limit_num_boxes
 
 qemu_group = global_data['libvirt_cfg']['qemu_group']
+qemu_group_auto = global_data['libvirt_cfg']['qemu_group_auto']
+
+if qemu_group_auto
+  if File.exists?('/etc/debian_version')
+    qemu_group = 'libvirt-qemu'
+  elsif File.exists?('/etc/redhat-release') or File.exists?('/etc/centos-release')
+    qemu_group = 'qemu'
+  elsif File.exists?('/etc/SuSE-release') or File.exists?('/etc/SUSE-brand')
+    qemu_group = 'qemu'
+  end
+end
+
 if ENV[pn_u + '_VAGRANT_QEMU_GROUP']
   qemu_group = ENV[pn_u + '_VAGRANT_QEMU_GROUP']
 end
