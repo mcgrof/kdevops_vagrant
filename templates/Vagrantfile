@@ -244,9 +244,13 @@ Vagrant.configure("2") do |config|
                 end
               end
             end
+            non_nvme_drive_interface = "virtio"
+            if server_data['lacks_drive_virtio']
+              non_nvme_drive_interface = "scsi"
+            end
             if server_data['lacks_nvme_support']
               libvirt.qemuargs :value => "-drive"
-              libvirt.qemuargs :value => "file=#{nvme_disk},if=virtio"
+              libvirt.qemuargs :value => "file=#{nvme_disk},if=#{non_nvme_drive_interface}"
             else
               libvirt.qemuargs :value => "-drive"
               libvirt.qemuargs :value => "file=#{nvme_disk},if=none,id=#{disk_id}"
