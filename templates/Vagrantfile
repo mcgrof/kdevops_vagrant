@@ -244,10 +244,15 @@ Vagrant.configure("2") do |config|
                 end
               end
             end
-            libvirt.qemuargs :value => "-drive"
-            libvirt.qemuargs :value => "file=#{nvme_disk},if=none,id=#{disk_id}"
-            libvirt.qemuargs :value => "-device"
-            libvirt.qemuargs :value => "nvme,drive=#{disk_id},serial=#{serial_id}"
+            if server_data['lacks_nvme_support']
+              libvirt.qemuargs :value => "-drive"
+              libvirt.qemuargs :value => "file=#{nvme_disk},if=virtio"
+            else
+              libvirt.qemuargs :value => "-drive"
+              libvirt.qemuargs :value => "file=#{nvme_disk},if=none,id=#{disk_id}"
+              libvirt.qemuargs :value => "-device"
+              libvirt.qemuargs :value => "nvme,drive=#{disk_id},serial=#{serial_id}"
+            end
             port += 1
 	  end
 	  if provider == "libvirt"
