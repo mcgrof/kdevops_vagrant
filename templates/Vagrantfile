@@ -220,7 +220,13 @@ Vagrant.configure("2") do |config|
         libvirt.memory = global_data["memory"]
         libvirt.cpus = global_data["cpus"]
         libvirt.emulator_path = global_data['libvirt_cfg']['emulator_path']
-        libvirt.machine_type = global_data['libvirt_cfg']['machine_type']
+        if server_data["machine_type"]
+          libvirt.machine_type = server_data["machine_type"]
+        else
+          if global_data['libvirt_cfg']['machine_type']
+            libvirt.machine_type = global_data['libvirt_cfg']['machine_type']
+          end
+        end
         if global_data['nvme_disks']
           port = 0
           port_count = global_data['nvme_disks'].size()
