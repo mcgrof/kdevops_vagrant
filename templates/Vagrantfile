@@ -20,12 +20,7 @@
 #   file used
 # ${PN_U}_VAGRANT_PROVIDER - lets you override provider
 # ${PN_U}_VAGRANT_LIMIT_BOXES - lets you enable box limiting
-# ${PN_U}__VAGRANT_LIMIT_NUM_BOXES - number of boxes to limit
-#
-# XXX: environment variables are not ideal, consider letting one override
-# variables using an extra_args.yml file and then we'd let *those* variables
-# override the default settings on your filesystem configuration. This would
-# require some work.
+# ${PN_U}_VAGRANT_LIMIT_NUM_BOXES - number of boxes to limit
 
 Vagrant.require_version ">= 1.6.0"
 
@@ -78,12 +73,32 @@ pn_u = project_namespace.upcase
 pn_u = pn_u.tr("-", "_")
 pn_l = pn_l.tr("-", "_")
 
-node_config = ENV[pn_u + '_VAGRANT_NODE_CONFIG'] ? ENV[pn_u + '_VAGRANT_NODE_CONFIG'] : pn_l + "_nodes.yaml"
+node_config          = ENV[pn_u + '_VAGRANT_NODE_CONFIG'] ? ENV[pn_u + '_VAGRANT_NODE_CONFIG'] : pn_l + "_nodes.yaml"
+node_config_override = ENV[pn_u + '_VAGRANT_NODE_CONFIG'] ? ENV[pn_u + '_VAGRANT_NODE_CONFIG'] : pn_l + "_nodes_override.yaml"
 
-config_data= YAML.load_file(node_config)
+config_data = YAML.load_file(node_config)
+
+override_data = false
+if File.file?(node_config_override)
+	override_data = true
+	config_data_override = YAML.load_file(node_config_override)
+end
+
 global_data = config_data['vagrant_global']
 vagrant_boxes = config_data['vagrant_boxes']
 ansible_playbooks = config_data['ansible_playbooks'] ? config_data['ansible_playbooks'] : false
+
+if override_data
+	if config_data_override['vagrant_global']
+		global_data = config_data_override['vagrant_global']
+	end
+	if config_data_override['vagrant_boxes']
+		vagrant_boxes = config_data_override['vagrant_boxes']
+	end
+	if config_data_override['ansible_playbooks']
+		ansible_playbooks = config_data_override['ansible_playbooks'] ? config_data_override['ansible_playbooks'] : false
+	end
+end
 
 if global_data['force_provider']
   provider = global_data['force_provider']

@@ -26,7 +26,13 @@ basename of the directory where your playbook file is stored which called
 this role. For instance, say your playbook file is stored under:
 
 ```
-/home/user/devel/kdevops/playbooks/kdevops_vagrant.yml
+/home/user/devel/kdevops/playbooks/kdevops_vagrant_nodes.yml
+```
+
+You can override data in another file:
+
+```
+/home/user/devel/kdevops/playbooks/kdevops_vagrant_nodes_override.yaml
 ```
 
 
