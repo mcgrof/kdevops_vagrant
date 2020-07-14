@@ -151,6 +151,42 @@ This will ensure only the first host, for example, would be created and
 provisioned. This might be useful if you are developing on a laptop, for
 example, and you want to limit the amount of resources used.
 
+Scope of use of ansible
+-----------------------
+
+`kdevops` as a whole is designed to be agnostic to how you set up a system,
+whether that be a virtualized local systemw it libvirt / Virtualbox, you use
+a bare metal system, or you use a cloud environment.
+
+Because of this the there 3 stages to bring up:
+
+  * Bring up: virtual / cloud / bare metal
+  * Configure and install dependencies: add systems to ~/.ssh/config, and install
+    users's preferred bash scripts, .gitconfig, and generic development packages
+    of choice. This is handled through the
+    [http://github.com/mcgrof/update_ssh_config_vagrant](update_ssh_config_vagrant)
+    and
+    [http://github.com/mcgrof/devconfig](devconfig)
+    ansible roles.
+  * Let it rip: do your work, and this is typically now encouraged through
+    ansible
+
+Our use of vagrant with ansible is limited to the first two parts mentioned
+above. And so we use ansible *only* to use the two ansible roles:
+
+  * [http://github.com/mcgrof/update_ssh_config_vagrant](update_ssh_config_vagrant)
+  * [http://github.com/mcgrof/devconfig](devconfig)
+
+We purposely don't want to extend this practice, and the reason is that we
+want users to use ansible directly for later objectives. The work behind
+bring up and configuring, installing developer dependencies must be handled
+either by vagrant, terraform, or the user who set up the bare metal systems
+manually.
+
+Because of this we don't encourage adding more ansible roles for vagrant's use.
+These two roles should suffice for typical setups, and the *rest* of the use
+of ansible should be done manually.
+
 Ansible role Variables
 ----------------------
 
