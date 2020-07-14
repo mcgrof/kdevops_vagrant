@@ -187,6 +187,76 @@ Because of this we don't encourage adding more ansible roles for vagrant's use.
 These two roles should suffice for typical setups, and the *rest* of the use
 of ansible should be done manually.
 
+Ansible python interpreter
+--------------------------
+
+Ansible relies on python on remote systems. Which version of python should
+be used will vary, but by default ansible will try to use an old version of
+the python interpreter, so to help support older systems. This decision
+isn't the best for newer systems, and so you are encouraged to specify
+the interpreter. This can be set through an extra vars argument, and there
+are different ways to do this. The kdevops way is to set it on the hosts
+file, that is, the inventory file. But since vagrant does not rely on the
+inventory file, we must cook up a different solution.
+
+We therefore let you specify this on the node configuration with a global
+setting for all systems, and also allow each node / box to have define its
+own as follows:
+
+```
+vagrant_global:
+  ansible_python_interpreter: "/usr/bin/python3"
+  ...
+
+vagrant_boxes:
+  - name: kdevops
+    ip: 172.17.8.101
+    # This is an example, you can obviously specify whatever, python2, etc.
+    ansible_python_interpreter: "/usr/bin/python3"
+  - name: kdevops-dev
+    ip: 172.17.8.102
+    ansible_python_interpreter: "/usr/bin/python3"
+```
+
+When we do this, we the Vagrantfile will process this and pass it on to
+the vagrant ansible plugin via a JSON hash which is passed on to ansible
+then directly on the command line.
+
+Ansible extra vars use with vagrant
+-----------------------------------
+
+Ansible has its own heirarchy of how variables take precedence, through
+either the command line, or role files, etc, and this is documented on
+the [https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html](ansible playbooks variable documentation page).
+
+While this might suit most uses, it doesn't really help with projects which
+want to allow users specify their own variations to the defaults in a file
+not present in version control, and without having to expand on the command
+line.
+
+Since kdevops consists in a unified set of ansible roles we support a unified
+way to define overrides to ansible. We do this by allowing the user to override
+ansible variables in the project root directory in a file called:
+
+  * `extra_vars.yml`
+
+
+So in the kdevops project example, this would be:
+
+```
+/home/user/devel/kdevops/extra_vars.yml
+```
+
+When this file is set, if no python interpreter was specified the vagrant
+ansible plugin will ensure the just the file is passed on to ansible directly
+on the command line via `--extra-vars=file`.
+
+If the python interpreter *was* set, since the vagrant ansible plugin only
+accepts passing extra variables to ansible in JSON hash, we must process the
+file provided within Vagrantfile and append the JSON hash of that file. This
+means we do the file processing ourselves when the python interpreter is set
+and augment the JSON hash.
+
 Ansible role Variables
 ----------------------
 

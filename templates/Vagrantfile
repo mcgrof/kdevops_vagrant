@@ -33,6 +33,7 @@
 
 Vagrant.require_version ">= 1.6.0"
 
+require 'json'
 require 'yaml'
 require 'fileutils'
 require 'rbconfig'
@@ -139,7 +140,6 @@ limit_num_boxes = limit_boxes == "yes" && ENV[pn_u + '_VAGRANT_LIMIT_NUM_BOXES']
 
 qemu_group = global_data['libvirt_cfg']['qemu_group']
 qemu_group_auto = global_data['libvirt_cfg']['qemu_group_auto']
-
 
 global_ansible_python_interpreter = ""
 if global_data['ansible_python_interpreter']
@@ -326,14 +326,49 @@ Vagrant.configure("2") do |config|
             ansible.limit = playbook['limit'] ? playbook['limit'] : "all"
             ansible.playbook = playbook['name']
             if ansible_extra_args_python != ""
+	      # It is not well documented, but the vagrant ansible plugin only
+	      # accepts extra_vars to be either a file, or a JSON hash. Since
+	      # we are supporting the user to specify a JSON or YAML file *and*
+	      # we are also supporting to specify the pyhon interpreter and if
+	      # used we throw into the extra_args as JSON, it means we *must*
+	      # just only and always give the ansible plugin the arguments
+	      # in JSON format if the python interpreter was set.
               ansible.extra_vars = ansible_extra_args_python
             end
+            # We support a way for you to specify an extra_vars file which
+            # if set, and if this is a file, the vagrant ansible plugin will
+            # pass the file to ansinle directly using the argument:
+            #
+            #   --extra-vars=file
             if ansible_playbooks['extra_vars']
               if File.exist?(extra_vars)
+		# If it was set we must use JSON as we can only append
+		# data, and since we are using JSON for the python stuff
+		# we must use JSON for the data ammended as well. Also,
+		# the vagrant ansible plugin only accepts data hashed in JSON
+		# format anyway.
                 if ansible_extra_args_python != ""
-                  ansible.extra_vars = ansible.extra_vars + "#{extra_vars}"
+                  if extra_vars.end_with?(".yml") || extra_vars.end_with?(".yaml")
+                    # If we already have the python interpreter setting, we
+                    # must merge the yaml file with hash we created for the
+                    # python interpreter.
+                    file_json_hash = JSON.parse(YAML.load_file("#{extra_vars}").to_json)
+                    ansible.extra_vars = ansible.extra_vars.merge(file_json_hash)
+                  elsif extra_vars.end_with?(".json")
+                    json_from_file = File.read("#{extra_vars}")
+                    file_json_hash = JSON.parse(json_from_file)
+                    ansible.extra_vars = ansible.extra_vars.merge(file_json_hash)
+                  else
+                    puts "Unsupported file extension on the specified ansible extra_args file: #{extra_vars}. Supported extensions: yml, yaml, json"
+                    exit
+                  end
+                # If no python interpreter was passed then just letting
+                # the vagrant ansible plugin pass on to ansible the file
+                # would should work, as it seems ansible --extra-vars=file
+                # argument supports yaml or JSON file formats, but the file
+                # path must be prefixed with the character '@'.
                 else
-                  ansible.extra_vars = "#{extra_vars}"
+                  ansible.extra_vars = "@#{extra_vars}"
                 end
               end # end of file check for extra_vars
             end # end of check if extra vars is set
