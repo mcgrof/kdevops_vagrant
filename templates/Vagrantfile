@@ -11,10 +11,19 @@
 # kdevops/vagrant/Vagrantfile then your namespace is inferred to be kdevops.
 #
 # The file which describes nodes for this project is expected to then be
-# kdevops_nodes.yml Environment you can use are expected to be prefixed in
-# upper case by your project namespace. We support the following environment
-# variables, assume ${PN_U} below is your upper case of your project namespace,
-# so for kdevops this would be KDEVOPS:
+# kdevops_nodes.yml. In this project example's case you can override node
+# configuration through the node overridef file:
+#
+# 	kdevops_vagrant_nodes_override.yaml
+#
+# You can use environemnt variables as well to override configuration, but this
+# doesn't scale well as it means we have to add a support into this file for
+# each new feature.
+#
+# Environment you can use are expected to be prefixed in upper case by your
+# project namespace. We support the following environment variables, assume
+# ${PN_U} below is your upper case of your project namespace, so for kdevops
+# this would be KDEVOPS:
 #
 # ${PN_U}_VAGRANT_NODE_CONFIG - lets you override default configuration
 #   file used

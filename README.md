@@ -1,7 +1,7 @@
 kdevops_vagrant
 ===============
 
-kdevops_vagrant is an ansible role which deploys a community shared kdevops
+`kdevops_vagrant` is an ansible role which deploys a community shared kdevops
 Vagrant file into your project. This ansible role copies the Vagrantfile
 project namespace directory, and can optionally run vagrant for you.
 
@@ -98,8 +98,25 @@ We makes use of the [https://github.com/mcgrof/libvirt-user](libvirt-user)
 ansible role to enable a regular user. Read the documentation there for
 the logic into that.
 
+Overriding node configuration with a different file
+----------------------------------------------------
+
+The better way to support overriding variables used in vagrant is throught
+the `$(project)_node_override.yaml` file. So for example, for the
+[https://github.com/mcgrof/kdevops](kdevops project), you can override data
+in another optional file kept outside of git:
+
+```
+/home/user/devel/kdevops/playbooks/kdevops_vagrant_nodes_override.yaml
+```
+
 Environment variables
 ---------------------
+
+Only if using a override file does not work you can use environment variables.
+But using environment variables is done on a case by case basis, given that
+we have to implement support for each new variable added. Using the overrides
+file, you can override anything, as soon as a new feature is added.
 
 Environment variables are prefixed by the upper case version of the project
 namespace as described above. Let us refer to this as `${PN_U}`. Taking this
