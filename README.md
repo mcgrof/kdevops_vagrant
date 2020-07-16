@@ -261,6 +261,9 @@ is passed on to ansible directly on the command line via `--extra-vars=@file`.
 The prefix of `@` is required when specifying a file. You don't have to provide
 the `@`, we do that for you.
 
+All of the ansible roles used with kdevops supports looking for this
+`extra_vars` file.
+
 Ansible role Variables
 ----------------------
 
