@@ -194,33 +194,43 @@ Ansible relies on python on remote systems. Which version of python should
 be used will vary, but by default ansible will try to use an old version of
 the python interpreter, so to help support older systems. This decision
 isn't the best for newer systems, and so you are encouraged to specify
-the interpreter. This can be set through an extra vars argument, and there
-are different ways to do this. The kdevops way is to set it on the hosts
-file, that is, the inventory file. But since vagrant does not rely on the
-inventory file, we must cook up a different solution.
-
-We therefore let you specify this on the node configuration with a global
-setting for all systems, and also allow each node / box to have define its
-own as follows:
+the interpreter. This best set on the inventory file. The Vagrantfile
+assumes you have an inventory file called ../hosts, you however can override
+this on the ansible configuration as follows:
 
 ```
-vagrant_global:
-  ansible_python_interpreter: "/usr/bin/python3"
-  ...
-
-vagrant_boxes:
-  - name: kdevops
-    ip: 172.17.8.101
-    # This is an example, you can obviously specify whatever, python2, etc.
-    ansible_python_interpreter: "/usr/bin/python3"
-  - name: kdevops-dev
-    ip: 172.17.8.102
-    ansible_python_interpreter: "/usr/bin/python3"
+ansible_playbooks:
+  # If this file exists you can override any ansible variable there.
+  # This file is optional.
+  extra_vars: "../extra_vars.yml"
+  inventory: "../hosts"
+  playbooks:
+    - name: "../playbooks/update_ssh_config_vagrant.yml"
+    - name: "../playbooks/devconfig.yml
 ```
 
-When we do this, we the Vagrantfile will process this and pass it on to
-the vagrant ansible plugin via a JSON hash which is passed on to ansible
-then directly on the command line.
+Your hosts file might look like something like this:
+
+```
+[all]
+newsystem1
+oldsystem1
+[all:vars]
+ansible_python_interpreter =  "/usr/bin/python3"
+
+[new]
+newsystem1
+[new:vars]
+ansible_python_interpreter =  "/usr/bin/python3"
+
+[old]
+oldsystem1
+[dev:vars]
+ansible_python_interpreter =  "/usr/bin/python2"
+```
+
+In this case all does set `[all]` group the python interpreter to python3,
+however the last entry will ensure that the old system uses python2 instead.
 
 Ansible extra vars use with vagrant
 -----------------------------------
@@ -240,22 +250,16 @@ ansible variables in the project root directory in a file called:
 
   * `extra_vars.yml`
 
-
 So in the kdevops project example, this would be:
 
 ```
 /home/user/devel/kdevops/extra_vars.yml
 ```
 
-When this file is set, if no python interpreter was specified the vagrant
-ansible plugin will ensure the just the file is passed on to ansible directly
-on the command line via `--extra-vars=file`.
-
-If the python interpreter *was* set, since the vagrant ansible plugin only
-accepts passing extra variables to ansible in JSON hash, we must process the
-file provided within Vagrantfile and append the JSON hash of that file. This
-means we do the file processing ourselves when the python interpreter is set
-and augment the JSON hash.
+When this file is set the vagrant ansible plugin will ensure the just the file
+is passed on to ansible directly on the command line via `--extra-vars=@file`.
+The prefix of `@` is required when specifying a file. You don't have to provide
+the `@`, we do that for you.
 
 Ansible role Variables
 ----------------------
