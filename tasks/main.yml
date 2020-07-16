@@ -51,22 +51,11 @@
       - stat_file_result.stat.isreg
   tags: [ 'vagrant', 'assert' ]
 
-- name: Stat Vagrant file {{ vagrant_dir }}/Vagrantfile
-  stat:
-    path: "{{ vagrant_dir }}/Vagrantfile"
-    follow: yes
-  register: stat_vagrant_result
-  tags: [ 'vagrant', 'stat' ]
-
-- name: Copy Vagrantfile if it did not exist
+- name: Deploy new released Vagrantfile file
   template:
     src: Vagrantfile
     dest: "{{ vagrant_dir }}/Vagrantfile"
   run_once: true
-  when:
-    - stat_vagrant_result is success
-    - stat_vagrant_result.stat is success
-    - not stat_vagrant_result.stat.exists
   tags: [ 'vagrant', 'copy' ]
 
 - name: Run vagrant
